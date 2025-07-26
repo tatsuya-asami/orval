@@ -303,6 +303,7 @@ const generateSwrMutationImplementation = ({
   doc,
   swrBodyType,
   httpClient,
+  verb,
 }: {
   isRequestOptions: boolean;
   operationName: string;
@@ -318,6 +319,7 @@ const generateSwrMutationImplementation = ({
   doc?: string;
   swrBodyType: string;
   httpClient: OutputHttpClient;
+  verb?: Verbs;
 }) => {
   const hasParamReservedWord = props.some(
     (prop: GetterProp) => prop.name === 'query',
@@ -336,7 +338,7 @@ export type ${pascal(
   )}MutationResult = NonNullable<Awaited<ReturnType<typeof ${operationName}>>>
 export type ${pascal(operationName)}MutationError = ${errorType}
 
-${doc}export const ${camel(`use-${operationName}`)} = <TError = ${errorType}>(
+${doc}export const ${camel(`use-${operationName}${verb === Verbs.GET ? '-mutation' : ''}`)} = <TError = ${errorType}>(
   ${swrProps} ${generateSwrMutationArguments({
     operationName,
     isRequestOptions,
@@ -443,6 +445,8 @@ const generateSwrHook = (
     })
     .join(',');
 
+  const swrMutationFetcherName = camel(`get-${operationName}-mutation-fetcher`);
+
   if (verb === Verbs.GET) {
     const swrKeyProperties = props
       .filter((prop) => prop.type !== GetterPropType.HEADER)
@@ -511,6 +515,73 @@ export const ${swrKeyFnName} = (${queryKeyProps}) => [\`${route}\`${
     if (outputClient !== OutputClient.SWR_GET_MUTATION) {
       return swrKeyFn + swrKeyLoader + swrImplementation;
     }
+
+    // For OutputClient.SWR_GET_MUTATION, generate both useSWR and useSWRMutation
+    const httpFnPropertiesForGet = props
+      .filter((prop) => prop.type !== GetterPropType.HEADER)
+      .map((prop) => {
+        if (prop.type === GetterPropType.NAMED_PATH_PARAMS) {
+          return prop.destructured;
+        } else {
+          return prop.name;
+        }
+      })
+      .join(', ');
+
+    const swrMutationFetcherType = getSwrMutationFetcherType(
+      response,
+      httpClient,
+      override.fetch?.includeHttpResponseReturnType,
+      operationName,
+      mutator,
+    );
+    const swrMutationFetcherOptionType = getSwrMutationFetcherOptionType(
+      httpClient,
+      mutator,
+    );
+
+    const swrMutationFetcherOptions =
+      isRequestOptions && swrMutationFetcherOptionType
+        ? `options${context.output.optionsParamRequired ? '' : '?'}: ${swrMutationFetcherOptionType}`
+        : '';
+
+    const swrMutationFetcherFn = `
+export const ${swrMutationFetcherName} = (${queryKeyProps} ${swrMutationFetcherOptions}) => {
+  return (_: Key, __: { arg?: never }): ${swrMutationFetcherType} => {
+    return ${operationName}(${httpFnPropertiesForGet}${
+      swrMutationFetcherOptions.length
+        ? (httpFnPropertiesForGet.length ? ', ' : '') + 'options'
+        : ''
+    });
+  }
+}
+`;
+
+    const swrMutationImplementation = generateSwrMutationImplementation({
+      operationName,
+      swrKeyFnName,
+      swrMutationFetcherName,
+      swrKeyProperties,
+      swrMutationFetcherProperties,
+      swrProps,
+      props,
+      isRequestOptions,
+      response,
+      mutator,
+      swrOptions: override.swr,
+      doc,
+      swrBodyType: 'never',
+      httpClient,
+      verb: Verbs.GET,
+    });
+
+    return (
+      swrKeyFn +
+      swrKeyLoader +
+      swrImplementation +
+      swrMutationFetcherFn +
+      swrMutationImplementation
+    );
   } else {
     const httpFnProperties = props
       .filter((prop) => prop.type !== GetterPropType.HEADER)
@@ -530,10 +601,6 @@ export const ${swrKeyFnName} = (${queryKeyProps}) => [\`${route}\`${
       queryParams ? ', ...(params ? [params]: [])' : ''
     }] as const;
 `;
-
-    const swrMutationFetcherName = camel(
-      `get-${operationName}-mutation-fetcher`,
-    );
 
     const swrMutationFetcherType = getSwrMutationFetcherType(
       response,
