@@ -17497,6 +17497,12 @@ __metadata:
   languageName: node
   linkType: soft
 
+"orval@link:../../../packages/orval/dist::locator=swr-get-mutation%40workspace%3Areact-app-with-swr%2Fget-mutation":
+  version: 0.0.0-use.local
+  resolution: "orval@link:../../../packages/orval/dist::locator=swr-get-mutation%40workspace%3Areact-app-with-swr%2Fget-mutation"
+  languageName: node
+  linkType: soft
+
 "orval@link:../../../packages/orval/dist::locator=swr-with-fetch-client%40workspace%3Areact-app-with-swr%2Ffetch-client":
   version: 0.0.0-use.local
   resolution: "orval@link:../../../packages/orval/dist::locator=swr-with-fetch-client%40workspace%3Areact-app-with-swr%2Ffetch-client"
@@ -22423,6 +22429,26 @@ __metadata:
 "swr-basic@workspace:react-app-with-swr/basic":
   version: 0.0.0-use.local
   resolution: "swr-basic@workspace:react-app-with-swr/basic"
+  dependencies:
+    "@faker-js/faker": "npm:^9.8.0"
+    "@types/node": "npm:^14.14.13"
+    "@types/react": "npm:^17.0.0"
+    "@types/react-dom": "npm:^17.0.0"
+    axios: "npm:^1.8.2"
+    msw: "npm:^2.0.2"
+    orval: "link:../../../packages/orval/dist"
+    prettier: "npm:^3.0.3"
+    react: "npm:^17.0.1"
+    react-dom: "npm:^17.0.1"
+    react-scripts: "npm:^5.0.1"
+    swr: "npm:^1.2.2"
+    typescript: "npm:^5.2.2"
+  languageName: unknown
+  linkType: soft
+
+"swr-get-mutation@workspace:react-app-with-swr/get-mutation":
+  version: 0.0.0-use.local
+  resolution: "swr-get-mutation@workspace:react-app-with-swr/get-mutation"
   dependencies:
     "@faker-js/faker": "npm:^9.8.0"
     "@types/node": "npm:^14.14.13"
