@@ -97,49 +97,6 @@ export const useListPets = <TError = Promise<Error>>(
   };
 };
 
-export const getListPetsMutationFetcher = (
-  params?: ListPetsParams,
-  options?: RequestInit,
-) => {
-  return (_: Key, __: { arg?: never }): Promise<Pets> => {
-    return listPets(params, options);
-  };
-};
-
-export type ListPetsMutationResult = NonNullable<
-  Awaited<ReturnType<typeof listPets>>
->;
-export type ListPetsMutationError = Promise<Error>;
-
-/**
- * @summary List all pets
- */
-export const useListPetsMutation = <TError = Promise<Error>>(
-  params?: ListPetsParams,
-  options?: {
-    swr?: SWRMutationConfiguration<
-      Awaited<ReturnType<typeof listPets>>,
-      TError,
-      Key,
-      never,
-      Awaited<ReturnType<typeof listPets>>
-    > & { swrKey?: string };
-    fetch?: RequestInit;
-  },
-) => {
-  const { swr: swrOptions, fetch: fetchOptions } = options ?? {};
-
-  const swrKey = swrOptions?.swrKey ?? getListPetsKey(params);
-  const swrFn = getListPetsMutationFetcher(params, fetchOptions);
-
-  const query = useSWRMutation(swrKey, swrFn, swrOptions);
-
-  return {
-    swrKey,
-    ...query,
-  };
-};
-
 /**
  * @summary Create a pet
  */
@@ -258,49 +215,6 @@ export const useShowPetById = <TError = Promise<Error>>(
     swrFn,
     swrOptions,
   );
-
-  return {
-    swrKey,
-    ...query,
-  };
-};
-
-export const getShowPetByIdMutationFetcher = (
-  petId: string,
-  options?: RequestInit,
-) => {
-  return (_: Key, __: { arg?: never }): Promise<Pet> => {
-    return showPetById(petId, options);
-  };
-};
-
-export type ShowPetByIdMutationResult = NonNullable<
-  Awaited<ReturnType<typeof showPetById>>
->;
-export type ShowPetByIdMutationError = Promise<Error>;
-
-/**
- * @summary Info for a specific pet
- */
-export const useShowPetByIdMutation = <TError = Promise<Error>>(
-  petId: string,
-  options?: {
-    swr?: SWRMutationConfiguration<
-      Awaited<ReturnType<typeof showPetById>>,
-      TError,
-      Key,
-      never,
-      Awaited<ReturnType<typeof showPetById>>
-    > & { swrKey?: string };
-    fetch?: RequestInit;
-  },
-) => {
-  const { swr: swrOptions, fetch: fetchOptions } = options ?? {};
-
-  const swrKey = swrOptions?.swrKey ?? getShowPetByIdKey(petId);
-  const swrFn = getShowPetByIdMutationFetcher(petId, fetchOptions);
-
-  const query = useSWRMutation(swrKey, swrFn, swrOptions);
 
   return {
     swrKey,

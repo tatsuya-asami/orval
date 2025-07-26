@@ -8,7 +8,7 @@ export default defineConfig({
       mode: 'split',
       target: 'src/api/endpoints',
       schemas: 'src/api/models',
-      client: 'swr-get-mutation',
+      client: 'swr',
       httpClient: 'fetch',
       mock: true,
       override: {

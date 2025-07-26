@@ -7,7 +7,7 @@ export default defineConfig({
     },
     output: {
       mode: 'tags-split',
-      client: 'swr-get-mutation',
+      client: 'swr',
       httpClient: 'fetch',
       target: 'src/gen/endpoints',
       schemas: 'src/gen/models',
