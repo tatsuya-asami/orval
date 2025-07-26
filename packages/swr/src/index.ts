@@ -21,6 +21,8 @@ import {
   jsDoc,
   SwrOptions,
   OutputHttpClient,
+  OutputClient,
+  OutputClientFunc,
 } from '@orval/core';
 import {
   AXIOS_DEPENDENCIES,
@@ -383,6 +385,7 @@ const generateSwrHook = (
     deprecated,
   }: GeneratorVerbOptions,
   { route, context }: GeneratorOptions,
+  outputClient: OutputClient | OutputClientFunc,
 ) => {
   const isRequestOptions = override?.requestOptions !== false;
   const httpClient = context.output.httpClient;
@@ -453,7 +456,9 @@ export const ${swrKeyFnName} = (${queryKeyProps}) => [\`${route}\`${
       httpClient,
     });
 
-    return swrKeyFn + swrKeyLoader + swrImplementation;
+    if (outputClient !== OutputClient.SWR_GET_MUTATION) {
+      return swrKeyFn + swrKeyLoader + swrImplementation;
+    }
   } else {
     const queryKeyProps = toObjectString(
       props.filter(
@@ -606,13 +611,21 @@ export const generateSwrHeader: ClientHeaderBuilder = (params) =>
   ${getSwrHeader(params)}
 `;
 
-export const generateSwr: ClientBuilder = (verbOptions, options) => {
+export const generateSwr: ClientBuilder = (
+  verbOptions,
+  options,
+  outputClient,
+) => {
   const imports = generateVerbImports(verbOptions);
   const functionImplementation = generateSwrRequestFunction(
     verbOptions,
     options,
   );
-  const hookImplementation = generateSwrHook(verbOptions, options);
+  const hookImplementation = generateSwrHook(
+    verbOptions,
+    options,
+    outputClient,
+  );
 
   return {
     implementation: `${functionImplementation}\n\n${hookImplementation}`,
@@ -620,12 +633,18 @@ export const generateSwr: ClientBuilder = (verbOptions, options) => {
   };
 };
 
-const swrClientBuilder: ClientGeneratorsBuilder = {
-  client: generateSwr,
-  header: generateSwrHeader,
-  dependencies: getSwrDependencies,
-};
-
-export const builder = () => () => swrClientBuilder;
+export const builder =
+  ({
+    type = 'swr',
+  }: {
+    type?: OutputClient;
+  } = {}) =>
+  (): ClientGeneratorsBuilder => {
+    return {
+      client: (verbOptions, options) => generateSwr(verbOptions, options, type),
+      header: generateSwrHeader,
+      dependencies: getSwrDependencies,
+    };
+  };
 
 export default builder;
