@@ -391,6 +391,58 @@ const generateSwrHook = (
   const httpClient = context.output.httpClient;
   const doc = jsDoc({ summary, deprecated });
 
+  const queryKeyProps = toObjectString(
+    props.filter(
+      (prop) =>
+        prop.type === GetterPropType.PARAM ||
+        prop.type === GetterPropType.NAMED_PATH_PARAMS ||
+        prop.type === GetterPropType.QUERY_PARAM,
+    ),
+    'implementation',
+  );
+
+  const swrProps = toObjectString(
+    props.filter(
+      (prop) =>
+        prop.type === GetterPropType.PARAM ||
+        prop.type === GetterPropType.QUERY_PARAM ||
+        prop.type === GetterPropType.NAMED_PATH_PARAMS,
+    ),
+    'implementation',
+  );
+
+  const swrMutationFetcherProperties = props
+    .filter(
+      (prop) =>
+        prop.type === GetterPropType.PARAM ||
+        prop.type === GetterPropType.QUERY_PARAM ||
+        prop.type === GetterPropType.NAMED_PATH_PARAMS,
+    )
+    .map((param) => {
+      if (param.type === GetterPropType.NAMED_PATH_PARAMS) {
+        return param.destructured;
+      } else {
+        return param.name;
+      }
+    })
+    .join(',');
+
+  const swrKeyProperties = props
+    .filter(
+      (prop) =>
+        prop.type === GetterPropType.PARAM ||
+        prop.type === GetterPropType.NAMED_PATH_PARAMS ||
+        prop.type === GetterPropType.QUERY_PARAM,
+    )
+    .map((prop) => {
+      if (prop.type === GetterPropType.NAMED_PATH_PARAMS) {
+        return prop.destructured;
+      } else {
+        return prop.name;
+      }
+    })
+    .join(',');
+
   if (verb === Verbs.GET) {
     const swrKeyProperties = props
       .filter((prop) => prop.type !== GetterPropType.HEADER)
@@ -460,42 +512,6 @@ export const ${swrKeyFnName} = (${queryKeyProps}) => [\`${route}\`${
       return swrKeyFn + swrKeyLoader + swrImplementation;
     }
   } else {
-    const queryKeyProps = toObjectString(
-      props.filter(
-        (prop) =>
-          prop.type === GetterPropType.PARAM ||
-          prop.type === GetterPropType.NAMED_PATH_PARAMS ||
-          prop.type === GetterPropType.QUERY_PARAM,
-      ),
-      'implementation',
-    );
-
-    const swrProps = toObjectString(
-      props.filter(
-        (prop) =>
-          prop.type === GetterPropType.PARAM ||
-          prop.type === GetterPropType.QUERY_PARAM ||
-          prop.type === GetterPropType.NAMED_PATH_PARAMS,
-      ),
-      'implementation',
-    );
-
-    const swrMutationFetcherProperties = props
-      .filter(
-        (prop) =>
-          prop.type === GetterPropType.PARAM ||
-          prop.type === GetterPropType.QUERY_PARAM ||
-          prop.type === GetterPropType.NAMED_PATH_PARAMS,
-      )
-      .map((param) => {
-        if (param.type === GetterPropType.NAMED_PATH_PARAMS) {
-          return param.destructured;
-        } else {
-          return param.name;
-        }
-      })
-      .join(',');
-
     const httpFnProperties = props
       .filter((prop) => prop.type !== GetterPropType.HEADER)
       .map((prop) => {
@@ -508,22 +524,6 @@ export const ${swrKeyFnName} = (${queryKeyProps}) => [\`${route}\`${
         }
       })
       .join(', ');
-
-    const swrKeyProperties = props
-      .filter(
-        (prop) =>
-          prop.type === GetterPropType.PARAM ||
-          prop.type === GetterPropType.NAMED_PATH_PARAMS ||
-          prop.type === GetterPropType.QUERY_PARAM,
-      )
-      .map((prop) => {
-        if (prop.type === GetterPropType.NAMED_PATH_PARAMS) {
-          return prop.destructured;
-        } else {
-          return prop.name;
-        }
-      })
-      .join(',');
 
     const swrKeyFnName = camel(`get-${operationName}-mutation-key`);
     const swrMutationKeyFn = `export const ${swrKeyFnName} = (${queryKeyProps}) => [\`${route}\`${
