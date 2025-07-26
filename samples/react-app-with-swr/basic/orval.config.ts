@@ -7,7 +7,7 @@ export default defineConfig({
       mode: 'split',
       target: 'src/api/endpoints/petstoreFromFileSpecWithTransformer.ts',
       schemas: 'src/api/model',
-      client: 'swr',
+      client: 'swr-get-mutation',
       prettier: true,
       mock: true,
       override: {
