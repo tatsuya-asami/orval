@@ -7,10 +7,13 @@ export default defineConfig({
       mode: 'split',
       target: 'src/api/endpoints/petstoreFromFileSpecWithTransformer.ts',
       schemas: 'src/api/model',
-      client: 'swr-get-mutation',
+      client: 'swr',
       prettier: true,
       mock: true,
       override: {
+        swr: {
+          useSWRMutationForGet: true,
+        },
         mutator: {
           path: './src/api/mutator/custom-instance.ts',
           name: 'customInstance',

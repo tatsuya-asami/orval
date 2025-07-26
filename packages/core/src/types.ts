@@ -270,7 +270,6 @@ export const OutputClient = {
   SVELTE_QUERY: 'svelte-query',
   VUE_QUERY: 'vue-query',
   SWR: 'swr',
-  SWR_GET_MUTATION: 'swr-get-mutation',
   ZOD: 'zod',
   HONO: 'hono',
   FETCH: 'fetch',
@@ -623,6 +622,7 @@ export type AngularOptions = {
 
 export type SwrOptions = {
   useInfinite?: boolean;
+  useSWRMutationForGet?: boolean;
   swrOptions?: any;
   swrMutationOptions?: any;
   swrInfiniteOptions?: any;

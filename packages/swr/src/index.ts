@@ -21,8 +21,6 @@ import {
   jsDoc,
   SwrOptions,
   OutputHttpClient,
-  OutputClient,
-  OutputClientFunc,
 } from '@orval/core';
 import {
   AXIOS_DEPENDENCIES,
@@ -387,7 +385,6 @@ const generateSwrHook = (
     deprecated,
   }: GeneratorVerbOptions,
   { route, context }: GeneratorOptions,
-  outputClient: OutputClient | OutputClientFunc,
 ) => {
   const isRequestOptions = override?.requestOptions !== false;
   const httpClient = context.output.httpClient;
@@ -512,7 +509,7 @@ export const ${swrKeyFnName} = (${queryKeyProps}) => [\`${route}\`${
       httpClient,
     });
 
-    if (outputClient !== OutputClient.SWR_GET_MUTATION) {
+    if (!override.swr.useSWRMutationForGet) {
       return swrKeyFn + swrKeyLoader + swrImplementation;
     }
 
@@ -678,21 +675,13 @@ export const generateSwrHeader: ClientHeaderBuilder = (params) =>
   ${getSwrHeader(params)}
 `;
 
-export const generateSwr: ClientBuilder = (
-  verbOptions,
-  options,
-  outputClient,
-) => {
+export const generateSwr: ClientBuilder = (verbOptions, options) => {
   const imports = generateVerbImports(verbOptions);
   const functionImplementation = generateSwrRequestFunction(
     verbOptions,
     options,
   );
-  const hookImplementation = generateSwrHook(
-    verbOptions,
-    options,
-    outputClient,
-  );
+  const hookImplementation = generateSwrHook(verbOptions, options);
 
   return {
     implementation: `${functionImplementation}\n\n${hookImplementation}`,
@@ -700,18 +689,12 @@ export const generateSwr: ClientBuilder = (
   };
 };
 
-export const builder =
-  ({
-    type = 'swr',
-  }: {
-    type?: OutputClient;
-  } = {}) =>
-  (): ClientGeneratorsBuilder => {
-    return {
-      client: (verbOptions, options) => generateSwr(verbOptions, options, type),
-      header: generateSwrHeader,
-      dependencies: getSwrDependencies,
-    };
-  };
+const swrClientBuilder: ClientGeneratorsBuilder = {
+  client: generateSwr,
+  header: generateSwrHeader,
+  dependencies: getSwrDependencies,
+};
+
+export const builder = () => () => swrClientBuilder;
 
 export default builder;

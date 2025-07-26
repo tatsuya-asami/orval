@@ -43,7 +43,6 @@ const getGeneratorClient = (
     'svelte-query': query({ output, type: 'svelte-query' })(),
     'vue-query': query({ output, type: 'vue-query' })(),
     swr: swr()(),
-    'swr-get-mutation': swr({ type: 'swr-get-mutation' })(),
     zod: zod()(),
     hono: hono()(),
     fetch: fetchClient()(),
