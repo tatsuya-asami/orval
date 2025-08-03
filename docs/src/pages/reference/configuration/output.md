@@ -1429,6 +1429,79 @@ module.exports = {
 };
 ```
 
+##### swrMutatorPath
+
+Type: `String`.
+
+Use to override the `useSWRInfinite` options. Check available options [here](https://swr.vercel.app/docs/pagination#parameters)
+
+Example:
+
+```js
+module.exports = {
+  petstore: {
+    output: {
+      override: {
+        swr: {
+          swrMutatorPath: './src/api/mutator/custom-swr-instance.ts',
+        },
+      },
+    },
+  },
+};
+```
+
+```ts
+// custom-swr-instance.ts
+
+import { isAxiosError } from 'axios';
+import useSWR, {
+  type BareFetcher,
+  type Key,
+  type SWRConfiguration,
+  type SWRResponse,
+} from 'swr';
+
+const useCustomSWR = <
+  Data = any,
+  Error = any,
+  SWRKey extends Key = Key,
+  SWROptions extends
+    | SWRConfiguration<Data, Error, BareFetcher<Data>>
+    | undefined = SWRConfiguration<Data, Error, BareFetcher<Data>> | undefined,
+>(
+  swrKey: SWRKey,
+  fetcher: BareFetcher<Data> | null = null,
+  customConfig?: SWROptions,
+): SWRResponse<Data, Error> => {
+  return useSWR<Data, Error>(swrKey || null, fetcher, {
+    ...defaultConfig,
+    ...customConfig,
+  });
+};
+
+const defaultConfig: SWRConfiguration = {
+  onErrorRetry(error, _key, _config, revalidate, { retryCount }) {
+    if (
+      isAxiosError(error) &&
+      error.response?.status &&
+      error.response.status >= 400 &&
+      error.response.status < 500
+    ) {
+      return;
+    }
+
+    if (retryCount >= 10) {
+      return;
+    }
+
+    window.setTimeout(() => revalidate({ retryCount }), 5000);
+  },
+};
+
+export default useCustomSWR;
+```
+
 #### zod
 
 Type: `Object`.

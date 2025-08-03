@@ -21,6 +21,8 @@ import {
   jsDoc,
   SwrOptions,
   OutputHttpClient,
+  NormalizedOverrideOutput,
+  getImport,
 } from '@orval/core';
 import {
   AXIOS_DEPENDENCIES,
@@ -60,6 +62,24 @@ const SWR_DEPENDENCIES: GeneratorDependency[] = [
   },
 ];
 
+const getCustomSwrDependencies = (
+  target: string,
+  path: string,
+): GeneratorDependency[] => [
+  {
+    exports: [
+      { name: 'SWRConfiguration' },
+      { name: 'Key' },
+      { name: 'Arguments' },
+    ],
+    dependency: 'swr',
+  },
+  {
+    exports: [{ name: 'useSwr', values: true, default: true }],
+    dependency: getImport(target, { path, default: true }),
+  },
+];
+
 const SWR_INFINITE_DEPENDENCIES: GeneratorDependency[] = [
   {
     exports: [
@@ -87,12 +107,17 @@ export const getSwrDependencies: ClientDependenciesBuilder = (
   hasParamsSerializerOptions: boolean,
   _packageJson,
   httpClient?: OutputHttpClient,
+  _hasTagsMutator?,
+  override?: NormalizedOverrideOutput,
+  target?: string,
 ) => [
   ...(!hasGlobalMutator && httpClient === OutputHttpClient.AXIOS
     ? AXIOS_DEPENDENCIES
     : []),
   ...(hasParamsSerializerOptions ? PARAMS_SERIALIZER_DEPENDENCIES : []),
-  ...SWR_DEPENDENCIES,
+  ...(override?.swr.swrMutatorPath && target
+    ? getCustomSwrDependencies(target, override?.swr.swrMutatorPath)
+    : SWR_DEPENDENCIES),
   ...SWR_INFINITE_DEPENDENCIES,
   ...SWR_MUTATION_DEPENDENCIES,
 ];

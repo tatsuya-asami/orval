@@ -630,6 +630,7 @@ export type SwrOptions = {
   swrOptions?: any;
   swrMutationOptions?: any;
   swrInfiniteOptions?: any;
+  swrMutatorPath?: string;
 };
 
 export type FetchOptions = {
@@ -956,6 +957,7 @@ export type ClientDependenciesBuilder = (
   httpClient?: OutputHttpClient,
   hasTagsMutator?: boolean,
   override?: NormalizedOverrideOutput,
+  target?: string,
 ) => GeneratorDependency[];
 
 export type ClientMockGeneratorImplementation = {

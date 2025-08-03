@@ -12,7 +12,7 @@ import { createLogger, getFileInfo, loadFile, pascal, upath } from '../utils';
 
 export const BODY_TYPE_NAME = 'BodyType';
 
-const getImport = (output: string, mutator: NormalizedMutator) => {
+export const getImport = (output: string, mutator: NormalizedMutator) => {
   const outputFileInfo = getFileInfo(output);
   const mutatorFileInfo = getFileInfo(mutator.path);
   const { pathWithoutExtension } = getFileInfo(
