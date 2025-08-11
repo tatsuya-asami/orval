@@ -121,6 +121,25 @@ const getSwrMutationDependencies = (
   ];
 };
 
+const getSwrInfiniteDependencies = (
+  target: string,
+  mutator: { path: string; name: string },
+): GeneratorDependency[] => {
+  return [
+    {
+      exports: [
+        { name: 'SWRInfiniteConfiguration' },
+        { name: 'SWRInfiniteKeyLoader' },
+      ],
+      dependency: 'swr/infinite',
+    },
+    {
+      exports: [{ name: mutator.name, values: true }],
+      dependency: getImport(target, { path: mutator.path, default: true }),
+    },
+  ];
+};
+
 export const getSwrDependencies: ClientDependenciesBuilder = (
   hasGlobalMutator: boolean,
   hasParamsSerializerOptions: boolean,
@@ -137,7 +156,9 @@ export const getSwrDependencies: ClientDependenciesBuilder = (
   ...(target && override?.swr.mutator?.useSwr
     ? getCustomSwrDependencies(target, override.swr.mutator.useSwr)
     : SWR_DEPENDENCIES),
-  ...SWR_INFINITE_DEPENDENCIES,
+  ...(target && override?.swr.mutator?.useSWRInfinite
+    ? getSwrInfiniteDependencies(target, override.swr.mutator.useSWRInfinite)
+    : SWR_INFINITE_DEPENDENCIES),
   ...(target && override?.swr.mutator?.useSWRMutation
     ? getSwrMutationDependencies(target, override.swr.mutator.useSWRMutation)
     : SWR_MUTATION_DEPENDENCIES),
@@ -274,7 +295,7 @@ ${doc}export const ${camel(
     httpFunctionProps && httpRequestSecondArg ? ', ' : ''
   }${httpRequestSecondArg})
 
-  const ${queryResultVarName} = useSWRInfinite<Awaited<ReturnType<typeof swrFn>>, TError>(swrKeyLoader, swrFn, ${
+  const ${queryResultVarName} = ${override.swr.mutator?.useSWRInfinite?.name ?? 'useSWRInfinite'}<Awaited<ReturnType<typeof swrFn>>, TError>(swrKeyLoader, swrFn, ${
     swrOptions.swrInfiniteOptions
       ? `{
     ${stringify(swrOptions.swrInfiniteOptions)?.slice(1, -1)}

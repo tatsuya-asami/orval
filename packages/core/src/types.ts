@@ -633,6 +633,7 @@ export type SwrOptions = {
   mutator?: {
     useSwr: { path: string; name: string };
     useSWRMutation: { path: string; name: string };
+    useSWRInfinite: { path: string; name: string };
   };
 };
 
