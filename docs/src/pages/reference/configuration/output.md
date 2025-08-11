@@ -1429,11 +1429,11 @@ module.exports = {
 };
 ```
 
-##### swrMutator
+##### mutator
 
-Type: `String`.
+Type: `Object`.
 
-Use to override the `useSWRInfinite` options. Check available options [here](https://swr.vercel.app/docs/pagination#parameters)
+Use to override the SWR hooks with custom implementations. You can customize `useSwr`, `useSWRMutation`, and `useSWRInfinite` hooks
 
 Example:
 
@@ -1443,9 +1443,11 @@ module.exports = {
     output: {
       override: {
         swr: {
-          swrMutator: {
-            path: './src/api/mutator/custom-swr-instance.ts',
-            name: 'useCustomSWR',
+          mutator: {
+            useSwr: {
+              path: './src/api/mutator/custom-swr-instance.ts',
+              name: 'useCustomSWR',
+            },
           },
         },
       },
