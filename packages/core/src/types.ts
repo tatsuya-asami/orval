@@ -631,9 +631,9 @@ export type SwrOptions = {
   swrMutationOptions?: any;
   swrInfiniteOptions?: any;
   mutator?: {
-    useSwr: { path: string; name: string };
-    useSWRMutation: { path: string; name: string };
-    useSWRInfinite: { path: string; name: string };
+    useSwr?: { path: string; name: string };
+    useSWRMutation?: { path: string; name: string };
+    useSWRInfinite?: { path: string; name: string };
   };
 };
 
