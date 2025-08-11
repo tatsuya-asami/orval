@@ -180,6 +180,10 @@ export default defineConfig({
               path: '../mutators/custom-swr-instance.ts',
               name: 'useCustomSWR',
             },
+            useSWRMutation: {
+              path: '../mutators/custom-swr-instance.ts',
+              name: 'useCustomSWRMutation',
+            },
           },
         },
       },

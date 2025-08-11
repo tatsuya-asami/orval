@@ -630,7 +630,10 @@ export type SwrOptions = {
   swrOptions?: any;
   swrMutationOptions?: any;
   swrInfiniteOptions?: any;
-  mutator?: { useSwr: { path: string; name: string } };
+  mutator?: {
+    useSwr: { path: string; name: string };
+    useSWRMutation: { path: string; name: string };
+  };
 };
 
 export type FetchOptions = {

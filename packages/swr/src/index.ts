@@ -102,6 +102,25 @@ const SWR_MUTATION_DEPENDENCIES: GeneratorDependency[] = [
   },
 ];
 
+const getSwrMutationDependencies = (
+  target: string,
+  mutator: { path: string; name: string },
+): GeneratorDependency[] => {
+  return [
+    {
+      exports: [
+        { name: 'SWRMutationConfiguration' },
+        { name: 'SWRMutationKey' },
+      ],
+      dependency: 'swr/mutation',
+    },
+    {
+      exports: [{ name: mutator.name, values: true }],
+      dependency: getImport(target, { path: mutator.path, default: true }),
+    },
+  ];
+};
+
 export const getSwrDependencies: ClientDependenciesBuilder = (
   hasGlobalMutator: boolean,
   hasParamsSerializerOptions: boolean,
@@ -115,11 +134,13 @@ export const getSwrDependencies: ClientDependenciesBuilder = (
     ? AXIOS_DEPENDENCIES
     : []),
   ...(hasParamsSerializerOptions ? PARAMS_SERIALIZER_DEPENDENCIES : []),
-  ...(override?.swr.mutator?.useSwr && target
+  ...(target && override?.swr.mutator?.useSwr
     ? getCustomSwrDependencies(target, override.swr.mutator.useSwr)
     : SWR_DEPENDENCIES),
   ...SWR_INFINITE_DEPENDENCIES,
-  ...SWR_MUTATION_DEPENDENCIES,
+  ...(target && override?.swr.mutator?.useSWRMutation
+    ? getSwrMutationDependencies(target, override.swr.mutator.useSWRMutation)
+    : SWR_MUTATION_DEPENDENCIES),
 ];
 
 const generateSwrArguments = ({
@@ -329,6 +350,7 @@ const generateSwrMutationImplementation = ({
   swrBodyType,
   httpClient,
   verb,
+  override,
 }: {
   isRequestOptions: boolean;
   operationName: string;
@@ -345,6 +367,7 @@ const generateSwrMutationImplementation = ({
   swrBodyType: string;
   httpClient: OutputHttpClient;
   verb?: Verbs;
+  override: NormalizedOverrideOutput;
 }) => {
   const hasParamReservedWord = props.some(
     (prop: GetterProp) => prop.name === 'query',
@@ -379,7 +402,7 @@ ${doc}export const ${camel(`use-${operationName}${verb === Verbs.GET ? '-mutatio
     swrMutationFetcherProperties && httpRequestSecondArg ? ', ' : ''
   }${httpRequestSecondArg});
 
-  const ${queryResultVarName} = useSWRMutation(swrKey, swrFn, ${
+  const ${queryResultVarName} = ${override.swr.mutator?.useSWRMutation.name ?? 'useSWRMutation'}(swrKey, swrFn, ${
     swrOptions.swrMutationOptions
       ? `{
     ${stringify(swrOptions.swrMutationOptions)?.slice(1, -1)}
@@ -598,6 +621,7 @@ export const ${swrMutationFetcherName} = (${queryKeyProps} ${swrMutationFetcherO
       swrBodyType: 'never',
       httpClient,
       verb: Verbs.GET,
+      override,
     });
 
     return (
@@ -681,6 +705,7 @@ export const ${swrMutationFetcherName} = (${swrProps} ${swrMutationFetcherOption
       doc,
       swrBodyType,
       httpClient: context.output.httpClient,
+      override,
     });
 
     return swrMutationFetcherFn + swrMutationKeyFn + swrImplementation;
