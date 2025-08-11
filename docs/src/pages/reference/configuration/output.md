@@ -1429,7 +1429,7 @@ module.exports = {
 };
 ```
 
-##### swrMutatorPath
+##### swrMutator
 
 Type: `String`.
 
@@ -1443,7 +1443,10 @@ module.exports = {
     output: {
       override: {
         swr: {
-          swrMutatorPath: './src/api/mutator/custom-swr-instance.ts',
+          swrMutator: {
+            path: './src/api/mutator/custom-swr-instance.ts',
+            name: 'useCustomSWR',
+          },
         },
       },
     },
@@ -1462,7 +1465,7 @@ import useSWR, {
   type SWRResponse,
 } from 'swr';
 
-const useCustomSWR = <
+export const useCustomSWR = <
   Data = any,
   Error = any,
   SWRKey extends Key = Key,
@@ -1498,8 +1501,6 @@ const defaultConfig: SWRConfiguration = {
     window.setTimeout(() => revalidate({ retryCount }), 5000);
   },
 };
-
-export default useCustomSWR;
 ```
 
 #### zod

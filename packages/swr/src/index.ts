@@ -64,7 +64,7 @@ const SWR_DEPENDENCIES: GeneratorDependency[] = [
 
 const getCustomSwrDependencies = (
   target: string,
-  path: string,
+  mutator: { path: string; name: string },
 ): GeneratorDependency[] => [
   {
     exports: [
@@ -75,8 +75,8 @@ const getCustomSwrDependencies = (
     dependency: 'swr',
   },
   {
-    exports: [{ name: 'useSwr', values: true, default: true }],
-    dependency: getImport(target, { path, default: true }),
+    exports: [{ name: mutator.name, values: true }],
+    dependency: getImport(target, { path: mutator.path, default: true }),
   },
 ];
 
@@ -115,8 +115,8 @@ export const getSwrDependencies: ClientDependenciesBuilder = (
     ? AXIOS_DEPENDENCIES
     : []),
   ...(hasParamsSerializerOptions ? PARAMS_SERIALIZER_DEPENDENCIES : []),
-  ...(override?.swr.swrMutatorPath && target
-    ? getCustomSwrDependencies(target, override?.swr.swrMutatorPath)
+  ...(override?.swr.mutator?.useSwr && target
+    ? getCustomSwrDependencies(target, override.swr.mutator.useSwr)
     : SWR_DEPENDENCIES),
   ...SWR_INFINITE_DEPENDENCIES,
   ...SWR_MUTATION_DEPENDENCIES,
@@ -186,6 +186,7 @@ const generateSwrImplementation = ({
   props,
   doc,
   httpClient,
+  override,
 }: {
   isRequestOptions: boolean;
   operationName: string;
@@ -200,6 +201,7 @@ const generateSwrImplementation = ({
   swrOptions: SwrOptions;
   doc?: string;
   httpClient: OutputHttpClient;
+  override: NormalizedOverrideOutput;
 }) => {
   const swrProps = toObjectString(props, 'implementation');
 
@@ -293,7 +295,7 @@ ${doc}export const ${camel(`use-${operationName}`)} = <TError = ${errorType}>(
     httpFunctionProps && httpRequestSecondArg ? ', ' : ''
   }${httpRequestSecondArg})
 
-  const ${queryResultVarName} = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(swrKey, swrFn, ${
+  const ${queryResultVarName} = ${override.swr.mutator?.useSwr?.name ?? 'useSwr'}<Awaited<ReturnType<typeof swrFn>>, TError>(swrKey, swrFn, ${
     swrOptions.swrOptions
       ? `{
     ${stringify(swrOptions.swrOptions)?.slice(1, -1)}
@@ -532,6 +534,7 @@ export const ${swrKeyFnName} = (${queryKeyProps}) => [\`${route}\`${
       swrOptions: override.swr,
       doc,
       httpClient,
+      override,
     });
 
     if (!override.swr.useSWRMutationForGet) {

@@ -175,7 +175,12 @@ export default defineConfig({
           swrInfiniteOptions: {
             initialSize: 10,
           },
-          swrMutatorPath: '../mutators/custom-swr-instance.ts',
+          mutator: {
+            useSwr: {
+              path: '../mutators/custom-swr-instance.ts',
+              name: 'useCustomSWR',
+            },
+          },
         },
       },
     },
